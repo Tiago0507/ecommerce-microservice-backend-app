@@ -1,0 +1,141 @@
+controller:
+  image: jenkins/jenkins:lts-jdk17
+  installPlugins:
+    - kubernetes:4269.v1a_f77ff5ae21
+    - workflow-aggregator:2.8
+    - configuration-as-code:1775.v810dc950b514
+    - credentials-binding:677.vdc9d38cb_41d8
+    - git:5.2.1
+    - github:1.39.0
+    - github-branch-source:1812.v6f9f5da_b_2366
+    - docker-workflow:572.v950f58993843
+    - pipeline-utility-steps:2.16.0
+    - junit:1259.v65b_14fa_2e5c8
+    - plain-credentials:143.v1b_df8b_d3b_e23
+    - matrix-auth:3.2.1
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 2Gi
+
+  JCasC:
+    defaultConfig: true
+    configScripts:
+      jenkins.yaml: |
+        jenkins:
+          systemMessage: "Managed by Helm + JCasC"
+          disableRememberMe: true
+          mode: EXCLUSIVE
+          numExecutors: 0
+          markupFormatter: plainText
+          remotingSecurity:
+            enabled: true
+          securityRealm:
+            local:
+              allowsSignup: false
+              users:
+                - id: ${JENKINS_ADMIN_USER}
+                  password: ${JENKINS_ADMIN_PASSWORD}
+          authorizationStrategy:
+            loggedInUsersCanDoAnything:
+              allowAnonymousRead: false
+          clouds:
+            - kubernetes:
+                name: "kubernetes"
+                serverUrl: "https://kubernetes.default"
+                namespace: "ci"
+                containerCapStr: "10"
+                templates:
+                  - name: "maven-dind"
+                    label: "maven-dind"
+                    serviceAccount: "default"
+                    nodeUsageMode: NORMAL
+                    idleMinutes: 5
+                    containers:
+                      - name: maven
+                        image: maven:3.9.6-eclipse-temurin-17
+                        ttyEnabled: true
+                        command: "cat"
+                        args: ""
+                        resourceLimitCpu: "1"
+                        resourceLimitMemory: "2Gi"
+                        resourceRequestCpu: "200m"
+                        resourceRequestMemory: "1Gi"
+                      - name: docker
+                        image: docker:24.0.7-cli
+                        ttyEnabled: true
+                        command: "cat"
+                        args: ""
+                        resourceLimitCpu: "500m"
+                        resourceLimitMemory: "512Mi"
+                        resourceRequestCpu: "100m"
+                        resourceRequestMemory: "128Mi"
+                    sideContainers:
+                      - name: dind
+                        image: docker:24.0.7-dind
+                        ttyEnabled: true
+                        privileged: true
+                        envVars:
+                          - envVar:
+                              key: DOCKER_TLS_CERTDIR
+                              value: ""
+                        args: "--mtu=1400"
+                        resourceLimitCpu: "1"
+                        resourceLimitMemory: "1Gi"
+                        resourceRequestCpu: "200m"
+                        resourceRequestMemory: "256Mi"
+                    envVars:
+                      - envVar:
+                          key: DOCKER_HOST
+                          value: "tcp://localhost:2375"
+        credentials:
+          system:
+            domainCredentials:
+              - credentials:
+                  - usernamePassword:
+                      id: "dockerhub-creds"
+                      username: ${DOCKERHUB_USERNAME}
+                      password: ${DOCKERHUB_PASSWORD}
+                      description: "Docker Hub credentials"
+        unclassified:
+          location:
+            url: "http://jenkins.ci.svc.cluster.local:8080/"
+
+  env:
+    - name: JENKINS_ADMIN_USER
+      valueFrom:
+        secretKeyRef:
+          name: jenkins-admin
+          key: user
+    - name: JENKINS_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: jenkins-admin
+          key: password
+    - name: DOCKERHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: dockerhub
+          key: username
+    - name: DOCKERHUB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: dockerhub
+          key: password
+
+  ingress:
+    enabled: false
+
+  serviceType: ClusterIP
+
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 8Gi
+
+rbac:
+  create: true
