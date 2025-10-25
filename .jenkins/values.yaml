@@ -1,0 +1,190 @@
+controller:
+  image:
+    repository: jenkins/jenkins
+    tag: lts-jdk17
+  installPlugins:
+    - kubernetes:latest
+    - workflow-aggregator:latest
+    - configuration-as-code:latest
+    - credentials-binding:latest
+    - git:latest
+    - github:latest
+    - github-branch-source:latest
+    - docker-workflow:latest
+    - pipeline-utility-steps:latest
+    - junit:latest
+    - plain-credentials:latest
+    - matrix-auth:latest
+    - job-dsl:latest
+    - workflow-multibranch:latest
+    - ansicolor:latest
+    - timestamper:latest
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 2Gi
+
+  JCasC:
+    defaultConfig: false
+    configScripts:
+      jenkins: |
+        jenkins:
+          systemMessage: "Managed by Helm + JCasC"
+          disableRememberMe: true
+          mode: EXCLUSIVE
+          numExecutors: 0
+          markupFormatter: plainText
+          remotingSecurity:
+            enabled: true
+          securityRealm:
+            local:
+              allowsSignup: false
+              users:
+                - id: ${JENKINS_ADMIN_USER}
+                  password: ${JENKINS_ADMIN_PASSWORD}
+          authorizationStrategy:
+            loggedInUsersCanDoAnything:
+              allowAnonymousRead: false
+          clouds:
+            - kubernetes:
+                name: "kubernetes"
+                serverUrl: "https://kubernetes.default"
+                namespace: "ci"
+                webSocket: true
+                containerCapStr: "10"
+                templates:
+                  - name: "maven-dind"
+                    label: "maven-dind"
+                    serviceAccount: "jenkins"
+                    nodeUsageMode: NORMAL
+                    idleMinutes: 5
+                    volumes:
+                      - persistentVolumeClaimVolume:
+                          claimName: maven-cache
+                          mountPath: "/root/.m2"
+                    containers:
+                      - name: maven
+                        image: maven:3.9.6-eclipse-temurin-17
+                        ttyEnabled: true
+                        command: "cat"
+                        args: ""
+                        resourceLimitCpu: "800m"
+                        resourceLimitMemory: "1Gi"
+                        resourceRequestCpu: "200m"
+                        resourceRequestMemory: "512Mi"
+                      - name: docker
+                        image: docker:24.0.7-cli
+                        ttyEnabled: true
+                        command: "cat"
+                        args: ""
+                        resourceLimitCpu: "300m"
+                        resourceLimitMemory: "256Mi"
+                        resourceRequestCpu: "100m"
+                        resourceRequestMemory: "128Mi"
+                      - name: dind
+                        image: docker:24.0.7-dind
+                        ttyEnabled: true
+                        privileged: true
+                        envVars:
+                          - envVar:
+                              key: DOCKER_TLS_CERTDIR
+                              value: ""
+                        args: "--mtu=1400 --host=tcp://0.0.0.0:2375"
+                        resourceLimitCpu: "600m"
+                        resourceLimitMemory: "512Mi"
+                        resourceRequestCpu: "200m"
+                        resourceRequestMemory: "256Mi"
+                    envVars:
+                      - envVar:
+                          key: DOCKER_HOST
+                          value: "tcp://localhost:2375"
+        credentials:
+          system:
+            domainCredentials:
+              - credentials:
+                  - usernamePassword:
+                      id: "dockerhub-creds"
+                      username: ${DOCKERHUB_USERNAME}
+                      password: ${DOCKERHUB_PASSWORD}
+                      description: "Docker Hub credentials"
+        unclassified:
+          location:
+            url: "http://jenkins.ci.svc.cluster.local:8080/"
+          globalLibraries:
+            libraries:
+              - name: "shared-library"
+                retriever:
+                  modernSCM:
+                    scm:
+                      git:
+                        remote: "https://github.com/Tiago0507/ecommerce-microservice-backend-app.git"
+        jobs:
+          - script: >
+              multibranchPipelineJob('ecommerce-microservices-pipeline') {
+                displayName('E-commerce Microservices Pipeline')
+                description('Pipeline multibranch para microservicios: dev, stage, master')
+                branchSources {
+                  git {
+                    id('ecommerce-repo')
+                    remote('https://github.com/Tiago0507/ecommerce-microservice-backend-app.git')
+                  }
+                }
+                orphanedItemStrategy {
+                  discardOldItems {
+                    numToKeep(20)
+                  }
+                }
+                triggers {
+                  periodicFolderTrigger { interval('5m') }
+                }
+              }
+
+  startupProbe:
+    enabled: true
+    httpGet:
+      path: /login
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 60
+
+  env:
+    - name: CASC_JENKINS_CONFIG
+      value: /var/jenkins_home/casc_configs/jenkins.yaml
+    - name: JENKINS_ADMIN_USER
+      valueFrom:
+        secretKeyRef:
+          name: jenkins-admin
+          key: user
+    - name: JENKINS_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: jenkins-admin
+          key: password
+    - name: DOCKERHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: dockerhub
+          key: username
+    - name: DOCKERHUB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: dockerhub
+          key: password
+
+  ingress:
+    enabled: false
+
+  serviceType: ClusterIP
+
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 8Gi
+
+rbac:
+  create: true
