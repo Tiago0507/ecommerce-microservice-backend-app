@@ -1,18 +1,22 @@
 controller:
-  image: jenkins/jenkins:lts-jdk17
+  image:
+    repository: jenkins/jenkins
+    tag: lts-jdk17
   installPlugins:
-    - kubernetes:4269.v1a_f77ff5ae21
-    - workflow-aggregator:2.8
-    - configuration-as-code:1775.v810dc950b514
-    - credentials-binding:677.vdc9d38cb_41d8
-    - git:5.2.1
-    - github:1.39.0
-    - github-branch-source:1812.v6f9f5da_b_2366
-    - docker-workflow:572.v950f58993843
-    - pipeline-utility-steps:2.16.0
-    - junit:1259.v65b_14fa_2e5c8
-    - plain-credentials:143.v1b_df8b_d3b_e23
-    - matrix-auth:3.2.1
+    - kubernetes:latest
+    - workflow-aggregator:latest
+    - configuration-as-code:latest
+    - credentials-binding:latest
+    - git:latest
+    - github:latest
+    - github-branch-source:latest
+    - docker-workflow:latest
+    - pipeline-utility-steps:latest
+    - junit:latest
+    - plain-credentials:latest
+    - matrix-auth:latest
+    - job-dsl:latest
+    - workflow-multibranch:latest
 
   resources:
     requests:
@@ -23,9 +27,9 @@ controller:
       memory: 2Gi
 
   JCasC:
-    defaultConfig: true
+    defaultConfig: false
     configScripts:
-      jenkins.yaml: |
+      jenkins: |
         jenkins:
           systemMessage: "Managed by Helm + JCasC"
           disableRememberMe: true
@@ -74,7 +78,6 @@ controller:
                         resourceLimitMemory: "512Mi"
                         resourceRequestCpu: "100m"
                         resourceRequestMemory: "128Mi"
-                    sideContainers:
                       - name: dind
                         image: docker:24.0.7-dind
                         ttyEnabled: true
@@ -83,7 +86,7 @@ controller:
                           - envVar:
                               key: DOCKER_TLS_CERTDIR
                               value: ""
-                        args: "--mtu=1400"
+                        args: "--mtu=1400 --host=tcp://0.0.0.0:2375"
                         resourceLimitCpu: "1"
                         resourceLimitMemory: "1Gi"
                         resourceRequestCpu: "200m"
@@ -104,8 +107,49 @@ controller:
         unclassified:
           location:
             url: "http://jenkins.ci.svc.cluster.local:8080/"
+          globalLibraries:
+            libraries:
+              - name: "shared-library"
+                retriever:
+                  modernSCM:
+                    scm:
+                      git:
+                        remote: "https://github.com/Tiago0507/ecommerce-microservice-backend-app.git"
+        jobs:
+          - script: >
+              multibranchPipelineJob('ecommerce-microservices-pipeline') {
+                displayName('E-commerce Microservices Pipeline')
+                description('Pipeline multibranch para microservicios: dev, stage, master')
+                branchSources {
+                  git {
+                    id('ecommerce-repo')
+                    remote('https://github.com/Tiago0507/ecommerce-microservice-backend-app.git')
+                  }
+                }
+                orphanedItemStrategy {
+                  discardOldItems {
+                    numToKeep(20)
+                  }
+                }
+                triggers {
+                  periodicFolderTrigger {
+                    interval('1h')
+                  }
+                }
+              }
+
+  startupProbe:
+    enabled: true
+    httpGet:
+      path: /login
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 60
 
   env:
+    - name: CASC_JENKINS_CONFIG
+      value: /var/jenkins_home/casc_configs/jenkins.yaml
     - name: JENKINS_ADMIN_USER
       valueFrom:
         secretKeyRef:
