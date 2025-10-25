@@ -1,11 +1,11 @@
 // Microservicios objetivo para el taller (intercomunicados)
 def SERVICES = [
-  'api-gateway',
-  'user-service',
-  'product-service',
-  'order-service',
-  'payment-service',
-  'shipping-service'
+  'api-gateway-container',
+  'user-service-container',
+  'product-service-container',
+  'order-service-container',
+  'payment-service-container',
+  'shipping-service-container'
 ]
 
 pipeline {
@@ -54,12 +54,12 @@ pipeline {
                 # Start core services first, then business services
                 docker compose -f core.yml up -d
                 docker compose -f compose.yml up -d \
-                  api-gateway \
-                  user-service \
-                  product-service \
-                  order-service \
-                  payment-service \
-                  shipping-service
+                  api-gateway-container \
+                  user-service-container \
+                  product-service-container \
+                  order-service-container \
+                  payment-service-container \
+                  shipping-service-container
               '''
             }
           }
