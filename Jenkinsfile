@@ -1,3 +1,13 @@
+// Microservicios objetivo para el taller (intercomunicados)
+def SERVICES = [
+  'api-gateway',
+  'user-service',
+  'product-service',
+  'order-service',
+  'payment-service',
+  'shipping-service'
+]
+
 pipeline {
   agent none
 
@@ -29,7 +39,8 @@ pipeline {
         stage('Build (Maven)') {
           steps {
             container('maven') {
-              sh 'mvn -q -ntp -DskipTests clean package'
+              // Ejecutar unit tests y empaquetar (sin ITs/E2E aquí)
+              sh 'mvn -q -ntp -B -DskipTests=false -DskipITs=true clean package'
             }
           }
         }
@@ -42,7 +53,13 @@ pipeline {
                 docker compose version
                 # Start core services first, then business services
                 docker compose -f core.yml up -d
-                docker compose -f compose.yml up -d
+                docker compose -f compose.yml up -d \
+                  api-gateway \
+                  user-service \
+                  product-service \
+                  order-service \
+                  payment-service \
+                  shipping-service
               '''
             }
           }

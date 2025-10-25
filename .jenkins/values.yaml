@@ -17,6 +17,8 @@ controller:
     - matrix-auth:latest
     - job-dsl:latest
     - workflow-multibranch:latest
+    - ansicolor:latest
+    - timestamper:latest
 
   resources:
     requests:
@@ -52,30 +54,35 @@ controller:
                 name: "kubernetes"
                 serverUrl: "https://kubernetes.default"
                 namespace: "ci"
+                webSocket: true
                 containerCapStr: "10"
                 templates:
                   - name: "maven-dind"
                     label: "maven-dind"
-                    serviceAccount: "default"
+                    serviceAccount: "jenkins"
                     nodeUsageMode: NORMAL
                     idleMinutes: 5
+                    volumes:
+                      - persistentVolumeClaimVolume:
+                          claimName: maven-cache
+                          mountPath: "/root/.m2"
                     containers:
                       - name: maven
                         image: maven:3.9.6-eclipse-temurin-17
                         ttyEnabled: true
                         command: "cat"
                         args: ""
-                        resourceLimitCpu: "1"
-                        resourceLimitMemory: "2Gi"
+                        resourceLimitCpu: "800m"
+                        resourceLimitMemory: "1Gi"
                         resourceRequestCpu: "200m"
-                        resourceRequestMemory: "1Gi"
+                        resourceRequestMemory: "512Mi"
                       - name: docker
                         image: docker:24.0.7-cli
                         ttyEnabled: true
                         command: "cat"
                         args: ""
-                        resourceLimitCpu: "500m"
-                        resourceLimitMemory: "512Mi"
+                        resourceLimitCpu: "300m"
+                        resourceLimitMemory: "256Mi"
                         resourceRequestCpu: "100m"
                         resourceRequestMemory: "128Mi"
                       - name: dind
@@ -87,8 +94,8 @@ controller:
                               key: DOCKER_TLS_CERTDIR
                               value: ""
                         args: "--mtu=1400 --host=tcp://0.0.0.0:2375"
-                        resourceLimitCpu: "1"
-                        resourceLimitMemory: "1Gi"
+                        resourceLimitCpu: "600m"
+                        resourceLimitMemory: "512Mi"
                         resourceRequestCpu: "200m"
                         resourceRequestMemory: "256Mi"
                     envVars:
@@ -132,9 +139,7 @@ controller:
                   }
                 }
                 triggers {
-                  periodicFolderTrigger {
-                    interval('1h')
-                  }
+                  periodicFolderTrigger { interval('5m') }
                 }
               }
 
