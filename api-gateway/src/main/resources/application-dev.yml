@@ -26,3 +26,11 @@ logging:
             jpa: DEBUG
             orm: DEBUG
 
+eureka:
+  instance:
+    prefer-ip-address: true
+
+  eureka:
+    instance:
+      prefer-ip-address: true
+
