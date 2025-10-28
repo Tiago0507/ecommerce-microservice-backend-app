@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.selimhorri.app.dto.VerificationTokenDto;
 import com.selimhorri.app.dto.response.collection.DtoCollectionResponse;
 import com.selimhorri.app.service.VerificationTokenService;
+import com.selimhorri.app.util.ParserUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,11 +38,12 @@ public class VerificationTokenResource {
 	
 	@GetMapping("/{verificationTokenId}")
 	public ResponseEntity<VerificationTokenDto> findById(
-			@PathVariable("verificationTokenId") 
-			@NotBlank(message = "Input must not blank") 
-			@Valid final String verificationTokenId) {
-		log.info("*** VerificationTokenDto, resource; fetch verificationToken by id *");
-		return ResponseEntity.ok(this.verificationTokenService.findById(Integer.parseInt(verificationTokenId.strip())));
+        	@PathVariable("verificationTokenId") 
+        	@NotBlank(message = "Input must not blank") 
+        	@Valid final String verificationTokenId) {
+    	log.info("*** VerificationTokenDto, resource; fetch verificationToken by id *");
+    	Integer id = ParserUtil.parseId(verificationTokenId, "verificationTokenId");
+    	return ResponseEntity.ok(this.verificationTokenService.findById(id));
 	}
 	
 	@PostMapping

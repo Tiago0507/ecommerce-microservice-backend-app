@@ -21,7 +21,7 @@ public interface PaymentMappingHelper {
 	public static Payment map(final PaymentDto paymentDto) {
 		return Payment.builder()
 				.paymentId(paymentDto.getPaymentId())
-				.orderId(paymentDto.getOrderDto().getOrderId())
+				.orderId(paymentDto.getOrderDto() != null ? paymentDto.getOrderDto().getOrderId() : null)
 				.isPayed(paymentDto.getIsPayed())
 				.paymentStatus(paymentDto.getPaymentStatus())
 				.build();

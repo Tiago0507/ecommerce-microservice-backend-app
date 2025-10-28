@@ -2,6 +2,7 @@ package com.selimhorri.app.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -18,8 +19,14 @@ import com.selimhorri.app.config.filter.JwtRequestFilter;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Configuración de seguridad para STAGING y PRODUCCIÓN
+ * Requiere autenticación JWT para endpoints protegidos
+ * Solo activa cuando profile = "stage" o "prod"
+ */
 @Configuration
 @EnableWebSecurity
+@Profile({"stage", "prod"})
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	

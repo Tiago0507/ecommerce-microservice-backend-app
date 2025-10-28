@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.selimhorri.app.dto.AddressDto;
 import com.selimhorri.app.dto.response.collection.DtoCollectionResponse;
 import com.selimhorri.app.service.AddressService;
+import com.selimhorri.app.util.ParserUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,11 +38,12 @@ public class AddressResource {
 	
 	@GetMapping("/{addressId}")
 	public ResponseEntity<AddressDto> findById(
-			@PathVariable("addressId") 
-			@NotBlank(message = "Input must not blank") 
-			@Valid final String addressId) {
-		log.info("*** AddressDto, resource; fetch address by id *");
-		return ResponseEntity.ok(this.addressService.findById(Integer.parseInt(addressId.strip())));
+        	@PathVariable("addressId") 
+        	@NotBlank(message = "Input must not blank") 
+        	@Valid final String addressId) {
+    	log.info("*** AddressDto, resource; fetch address by id *");
+    	Integer id = ParserUtil.parseId(addressId, "addressId");
+    	return ResponseEntity.ok(this.addressService.findById(id));
 	}
 	
 	@PostMapping

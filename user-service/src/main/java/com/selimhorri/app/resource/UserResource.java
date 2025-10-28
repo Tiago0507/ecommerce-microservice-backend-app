@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.selimhorri.app.dto.UserDto;
 import com.selimhorri.app.dto.response.collection.DtoCollectionResponse;
 import com.selimhorri.app.service.UserService;
+import com.selimhorri.app.util.ParserUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,8 @@ public class UserResource {
 			@NotBlank(message = "Input must not blank") 
 			@Valid final String userId) {
 		log.info("*** UserDto, resource; fetch user by id *");
-		return ResponseEntity.ok(this.userService.findById(Integer.parseInt(userId.strip())));
+		Integer id = ParserUtil.parseId(userId, "userId");
+		return ResponseEntity.ok(this.userService.findById(id));
 	}
 	
 	@PostMapping
@@ -63,22 +65,27 @@ public class UserResource {
 	}
 	
 	@PutMapping("/{userId}")
-	public ResponseEntity<UserDto> update(
-			@PathVariable("userId") 
-			@NotBlank(message = "Input must not blank") final String userId, 
-			@RequestBody 
-			@NotNull(message = "Input must not NULL") 
-			@Valid final UserDto userDto) {
-		log.info("*** UserDto, resource; update user with userId *");
-		return ResponseEntity.ok(this.userService.update(Integer.parseInt(userId.strip()), userDto));
-	}
+    public ResponseEntity<UserDto> update(
+            @PathVariable("userId") 
+            @NotBlank(message = "Input must not blank") final String userId, 
+            @RequestBody 
+            @NotNull(message = "Input must not NULL") 
+            @Valid final UserDto userDto) {
+        log.info("*** UserDto, resource; update user with userId *");
+        Integer id = ParserUtil.parseId(userId, "userId");
+        return ResponseEntity.ok(this.userService.update(id, userDto));
+    }
 	
 	@DeleteMapping("/{userId}")
-	public ResponseEntity<Boolean> deleteById(@PathVariable("userId") @NotBlank(message = "Input must not blank") @Valid final String userId) {
-		log.info("*** Boolean, resource; delete user by id *");
-		this.userService.deleteById(Integer.parseInt(userId));
-		return ResponseEntity.ok(true);
-	}
+    public ResponseEntity<Boolean> deleteById(
+            @PathVariable("userId") 
+            @NotBlank(message = "Input must not blank") 
+            @Valid final String userId) {
+        log.info("*** Boolean, resource; delete user by id *");
+        Integer id = ParserUtil.parseId(userId, "userId");
+        this.userService.deleteById(id);
+        return ResponseEntity.ok(true);
+    }
 	
 	@GetMapping("/username/{username}")
 	public ResponseEntity<UserDto> findByUsername(
