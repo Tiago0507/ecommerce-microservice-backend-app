@@ -43,7 +43,7 @@ services:
     networks:
       - microservices_network
   payment-service-container:
-    image: selimhorri/payment-service-ecommerce-boot:0.1.0
+    image: tiago0507/payment-service-ecommerce-boot:local
     ports:
       - 8400:8400
     environment:
@@ -85,7 +85,7 @@ services:
     networks:
       - microservices_network
   user-service-container:
-    image: selimhorri/user-service-ecommerce-boot:0.1.0
+    image: tiago0507/user-service-ecommerce-boot:local
     ports:
       - 8700:8700
     environment:

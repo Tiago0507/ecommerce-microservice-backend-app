@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.selimhorri.app.dto.CredentialDto;
 import com.selimhorri.app.dto.response.collection.DtoCollectionResponse;
 import com.selimhorri.app.service.CredentialService;
+import com.selimhorri.app.util.ParserUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,11 +38,12 @@ public class CredentialResource {
 	
 	@GetMapping("/{credentialId}")
 	public ResponseEntity<CredentialDto> findById(
-			@PathVariable("credentialId") 
-			@NotBlank(message = "Input must not blank") 
-			@Valid final String credentialId) {
-		log.info("*** CredentialDto, resource; fetch credential by id *");
-		return ResponseEntity.ok(this.credentialService.findById(Integer.parseInt(credentialId.strip())));
+        	@PathVariable("credentialId") 
+        	@NotBlank(message = "Input must not blank") 
+        	@Valid final String credentialId) {
+    	log.info("*** CredentialDto, resource; fetch credential by id *");
+    	Integer id = ParserUtil.parseId(credentialId, "credentialId");
+    	return ResponseEntity.ok(this.credentialService.findById(id));
 	}
 	
 	@PostMapping

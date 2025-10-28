@@ -34,14 +34,10 @@ public class PaymentServiceImpl implements PaymentService {
 		return this.paymentRepository.findAll()
 				.stream()
 					.map(PaymentMappingHelper::map)
-					.map(p -> {
-						p.setOrderDto(this.restTemplate.getForObject(AppConstant.DiscoveredDomainsApi
-								.ORDER_SERVICE_API_URL + "/" + p.getOrderDto().getOrderId(), OrderDto.class));
-						return p;
-					})
 					.distinct()
 					.collect(Collectors.toUnmodifiableList());
 	}
+	
 	
 	@Override
 	public PaymentDto findById(final Integer paymentId) {

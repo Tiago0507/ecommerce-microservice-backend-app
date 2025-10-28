@@ -24,12 +24,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "credentials")
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true, exclude = {"user", "verificationTokens"})
+@ToString(exclude = {"user", "verificationTokens"})
 @Data
 @Builder
 public final class Credential extends AbstractMappedEntity implements Serializable {
@@ -68,7 +70,7 @@ public final class Credential extends AbstractMappedEntity implements Serializab
 	private User user;
 	
 	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "credential")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "credential", orphanRemoval = true)
 	private Set<VerificationToken> verificationTokens;
 	
 }
