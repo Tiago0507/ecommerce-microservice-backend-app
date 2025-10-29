@@ -57,7 +57,7 @@ services:
     networks:
       - microservices_network
   product-service-container:
-    image: selimhorri/product-service-ecommerce-boot:0.1.0
+    image: tiago0507/product-service-ecommerce-boot:local
     ports:
       - 8500:8500
     environment:

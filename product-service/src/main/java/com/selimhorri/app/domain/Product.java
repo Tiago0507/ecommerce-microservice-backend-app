@@ -12,11 +12,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "products")
@@ -25,6 +28,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true, exclude = {"category"})
 @Data
 @Builder
+@ToString(exclude = {"category"})
 public final class Product extends AbstractMappedEntity implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -49,12 +53,12 @@ public final class Product extends AbstractMappedEntity implements Serializable 
 	@Column(name = "quantity")
 	private Integer quantity;
 	
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "category_id")
+	@JsonBackReference
 	private Category category;
 	
 }
-
 
 
 
