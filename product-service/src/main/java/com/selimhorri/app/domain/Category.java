@@ -22,6 +22,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "categories")
@@ -30,6 +31,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true, exclude = {"subCategories", "parentCategory", "products"})
 @Data
 @Builder
+@ToString(exclude = {"subCategories", "parentCategory", "products"})
 public final class Category extends AbstractMappedEntity implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -49,16 +51,15 @@ public final class Category extends AbstractMappedEntity implements Serializable
 	@OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Set<Category> subCategories;
 	
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "parent_category_id")
 	private Category parentCategory;
-	
+
 	@JsonIgnore
 	@OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Set<Product> products;
 	
 }
-
 
 
 
