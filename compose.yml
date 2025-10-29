@@ -29,7 +29,7 @@ services:
     networks:
       - microservices_network
   order-service-container:
-    image: selimhorri/order-service-ecommerce-boot:0.1.0
+    image: tiago0507/order-service-ecommerce-boot:local
     ports:
       - 8300:8300
     environment:
