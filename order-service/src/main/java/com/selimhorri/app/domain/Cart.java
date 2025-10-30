@@ -20,11 +20,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "carts")
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "orders")
 @EqualsAndHashCode(callSuper = true, exclude = {"orders"})
 @Data
 @Builder
@@ -37,6 +39,9 @@ public final class Cart extends AbstractMappedEntity implements Serializable {
 	@Column(name = "cart_id", unique = true, nullable = false, updatable = false)
 	private Integer cartId;
 	
+	@Column(name = "is_active")
+	private boolean isActive;
+
 	@Column(name = "user_id")
 	private Integer userId;
 	
@@ -45,7 +50,6 @@ public final class Cart extends AbstractMappedEntity implements Serializable {
 	private Set<Order> orders;
 	
 }
-
 
 
 
