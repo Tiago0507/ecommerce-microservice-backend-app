@@ -16,13 +16,3 @@ public class DtoCollectionResponse<T> {
 	private Collection<T> collection;
 	
 }
-
-
-
-
-
-
-
-
-
-
