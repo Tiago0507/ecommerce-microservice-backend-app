@@ -31,10 +31,18 @@ public interface OrderItemMappingHelper {
 				.build();
 	}
 	
+		public static OrderItem mapForCreation(final OrderItemDto orderItemDto) {
+		return OrderItem.builder()
+				.productId(orderItemDto.getProductId())
+				.orderId(orderItemDto.getOrderId())
+				.isActive(true)
+				.orderedQuantity(orderItemDto.getOrderedQuantity())
+				.build();
+	}
+	
 	
 	
 }
-
 
 
 

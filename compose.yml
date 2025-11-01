@@ -71,7 +71,7 @@ services:
     networks:
       - microservices_network
   shipping-service-container:
-    image: selimhorri/shipping-service-ecommerce-boot:0.1.0
+    image: tiago0507/shipping-service-ecommerce-boot:local
     ports:
       - 8600:8600
     environment:
@@ -99,7 +99,7 @@ services:
     networks:
       - microservices_network
   favourite-service-container:
-    image: selimhorri/favourite-service-ecommerce-boot:0.1.0
+    image: tiago0507/favourite-service-ecommerce-boot:local
     ports:
       - 8800:8800
     environment:

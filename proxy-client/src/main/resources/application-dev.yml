@@ -26,4 +26,5 @@ logging:
 eureka:
   instance:
     prefer-ip-address: true
+    hostname: ${HOSTNAME:localhost}
 

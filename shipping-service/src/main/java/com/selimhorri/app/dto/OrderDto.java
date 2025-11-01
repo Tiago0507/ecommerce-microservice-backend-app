@@ -26,11 +26,11 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class OrderDto implements Serializable {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private Integer orderId;
-	
+
 	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	@JsonFormat(pattern = AppConstant.LOCAL_DATE_TIME_FORMAT, shape = Shape.STRING)
@@ -38,18 +38,9 @@ public class OrderDto implements Serializable {
 	private LocalDateTime orderDate;
 	private String orderDesc;
 	private Double orderFee;
-	
+	private String orderStatus;
+
 	@JsonInclude(Include.NON_NULL)
 	private Set<OrderItemDto> orderItemDtos;
-	
+
 }
-
-
-
-
-
-
-
-
-
-

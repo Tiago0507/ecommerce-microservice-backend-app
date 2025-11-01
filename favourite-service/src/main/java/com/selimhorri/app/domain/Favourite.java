@@ -64,4 +64,3 @@ public final class Favourite extends AbstractMappedEntity implements Serializabl
 
 
 
-

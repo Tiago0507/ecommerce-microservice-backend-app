@@ -1,5 +1,7 @@
 package com.selimhorri.app.helper;
 
+import java.time.LocalDateTime;
+
 import com.selimhorri.app.domain.Favourite;
 import com.selimhorri.app.dto.FavouriteDto;
 import com.selimhorri.app.dto.ProductDto;
@@ -27,14 +29,13 @@ public interface FavouriteMappingHelper {
 		return Favourite.builder()
 				.userId(favouriteDto.getUserId())
 				.productId(favouriteDto.getProductId())
-				.likeDate(favouriteDto.getLikeDate())
+				.likeDate(LocalDateTime.now())
 				.build();
 	}
 	
 	
 	
 }
-
 
 
 
