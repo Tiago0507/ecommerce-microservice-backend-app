@@ -45,7 +45,8 @@ logging:
             jpa: DEBUG
             orm: DEBUG
 
-  eureka:
-    instance:
-      prefer-ip-address: true
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: ${HOSTNAME:localhost}
 
