@@ -8,12 +8,12 @@ public class ExternalServiceException extends RuntimeException {
     
     public ExternalServiceException(String message) {
         super(message);
-        this.errorCode = ErrorCode.EXTERNAL_SERVICE_ERROR;
+        this.errorCode = ErrorCode.SERVICE_UNAVAILABLE;
     }
     
     public ExternalServiceException(String message, Throwable cause) {
         super(message, cause);
-        this.errorCode = ErrorCode.EXTERNAL_SERVICE_ERROR;
+        this.errorCode = ErrorCode.SERVICE_UNAVAILABLE;
     }
     
     public ExternalServiceException(ErrorCode errorCode, String message) {

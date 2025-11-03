@@ -2,18 +2,20 @@ package com.selimhorri.app.resource;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.selimhorri.app.domain.id.OrderItemId;
+import com.selimhorri.app.util.ParserUtil;
 import com.selimhorri.app.dto.OrderItemDto;
 import com.selimhorri.app.dto.response.collection.DtoCollectionResponse;
 import com.selimhorri.app.service.OrderItemService;
@@ -26,63 +28,91 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class OrderItemResource {
-
-    private final OrderItemService orderItemService;
-
-    @GetMapping
-    public ResponseEntity<DtoCollectionResponse<OrderItemDto>> findAll() {
-        log.info("Fetching all order items");
-        return ResponseEntity.ok(
-                new DtoCollectionResponse<>(this.orderItemService.findAll()));
-    }
-
-    @GetMapping(params = "orderId")
-    public ResponseEntity<DtoCollectionResponse<OrderItemDto>> findAllByOrderId(
-            @RequestParam("orderId") final Integer orderId) {
-        log.info("Fetching order items by orderId: {}", orderId);
-        return ResponseEntity.ok(
-                new DtoCollectionResponse<>(this.orderItemService.findAllByOrderId(orderId)));
-    }
-
-    @GetMapping("/{orderItemId}")
+	
+	private final OrderItemService orderItemService;
+	
+	@GetMapping
+	public ResponseEntity<DtoCollectionResponse<OrderItemDto>> findAll() {
+		log.info("*** OrderItemDto List, controller; fetch all orderItems *");
+		return ResponseEntity.ok(new DtoCollectionResponse<>(this.orderItemService.findAll()));
+	}
+	
+	@GetMapping("/{orderId}/{productId}")
     public ResponseEntity<OrderItemDto> findById(
-            @PathVariable("orderItemId") final Integer orderItemId) {
-        log.info("Fetching order item by id: {}", orderItemId);
-        return ResponseEntity.ok(this.orderItemService.findById(orderItemId));
-    }
-
-    @GetMapping("/{orderId}/{productId}")
-    public ResponseEntity<OrderItemDto> findByOrderIdAndProductId(
-            @PathVariable("orderId") final Integer orderId,
-            @PathVariable("productId") final Integer productId) {
-        log.info("Fetching order item by composite id: orderId={}, productId={}", orderId, productId);
-        return ResponseEntity.ok(this.orderItemService.findByOrderIdAndProductId(orderId, productId));
-    }
-
-    @PostMapping
-    public ResponseEntity<OrderItemDto> save(
-            @RequestBody 
-            @NotNull(message = "Input must not be NULL") 
-            @Valid final OrderItemDto orderItemDto) {
-        log.info("Creating new order item");
-        OrderItemDto savedItem = this.orderItemService.save(orderItemDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedItem);
-    }
-
-    @DeleteMapping("/{orderItemId}")
-    public ResponseEntity<Void> deleteById(
-            @PathVariable("orderItemId") final Integer orderItemId) {
-        log.info("Deleting order item by id: {}", orderItemId);
-        this.orderItemService.deleteById(orderItemId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/{orderId}/{productId}")
-    public ResponseEntity<Void> deleteByOrderIdAndProductId(
-            @PathVariable("orderId") final Integer orderId,
-            @PathVariable("productId") final Integer productId) {
-        log.info("Deleting order item by composite id: orderId={}, productId={}", orderId, productId);
-        this.orderItemService.deleteByOrderIdAndProductId(orderId, productId);
-        return ResponseEntity.noContent().build();
-    }
+	    @PathVariable("orderId") 
+	    @NotBlank(message = "Input must not blank") 
+	    @Valid final String orderId, 
+	    @PathVariable("productId") 
+	    @NotBlank(message = "Input must not blank") 
+	    @Valid final String productId) {
+		log.info("*** OrderItemDto, resource; fetch orderItem by id *");
+		final Integer parsedOrderId = ParserUtil.parseId(orderId, "orderId");
+		final Integer parsedProductId = ParserUtil.parseId(productId, "productId");
+		return ResponseEntity.ok(this.orderItemService.findById(
+			new OrderItemId(parsedProductId, parsedOrderId)));
+	}
+	
+	@GetMapping("/find")
+	public ResponseEntity<OrderItemDto> findById(
+			@RequestBody 
+			@NotNull(message = "Input must not be NULL") 
+			@Valid final OrderItemId orderItemId) {
+		log.info("*** OrderItemDto, resource; fetch orderItem by id *");
+		return ResponseEntity.ok(this.orderItemService.findById(orderItemId));
+	}
+	
+	@PostMapping
+	public ResponseEntity<OrderItemDto> save(
+			@RequestBody 
+			@NotNull(message = "Input must not be NULL") 
+			@Valid final OrderItemDto orderItemDto) {
+		log.info("*** OrderItemDto, resource; save orderItem *");
+		return ResponseEntity.ok(this.orderItemService.save(orderItemDto));
+	}
+	
+	@PutMapping
+	public ResponseEntity<OrderItemDto> update(
+			@RequestBody 
+			@NotNull(message = "Input must not be NULL") 
+			@Valid final OrderItemDto orderItemDto) {
+		log.info("*** OrderItemDto, resource; update orderItem *");
+		return ResponseEntity.ok(this.orderItemService.update(orderItemDto));
+	}
+	
+	@DeleteMapping("/{orderId}/{productId}")
+    public ResponseEntity<Boolean> deleteById(
+	    @PathVariable("orderId") 
+	    @NotBlank(message = "Input must not blank") 
+	    @Valid final String orderId, 
+	    @PathVariable("productId") 
+	    @NotBlank(message = "Input must not blank") 
+	    @Valid final String productId) {
+		log.info("*** Boolean, resource; delete orderItem by id *");
+		final Integer parsedOrderId = ParserUtil.parseId(orderId, "orderId");
+		final Integer parsedProductId = ParserUtil.parseId(productId, "productId");
+		this.orderItemService.deleteById(new OrderItemId(parsedProductId, parsedOrderId));
+		return ResponseEntity.ok(true);
+	}
+	
+	@DeleteMapping("/delete")
+	public ResponseEntity<Boolean> deleteById(
+			@RequestBody 
+			@NotNull(message = "Input must not be NULL") 
+			@Valid final OrderItemId orderItemId) {
+		log.info("*** Boolean, resource; delete orderItem by id *");
+		this.orderItemService.deleteById(orderItemId);
+		return ResponseEntity.ok(true);
+	}
+	
+	
+	
 }
+
+
+
+
+
+
+
+
+
