@@ -5,8 +5,6 @@ import java.time.Instant;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -29,24 +27,11 @@ abstract public class AbstractMappedEntity implements Serializable {
 
 	@CreatedDate
 	@JsonFormat(shape = Shape.STRING)
-	@Column(name = "created_at", nullable = false, updatable = false)
+	@Column(name = "created_at")
 	private Instant createdAt;
 
 	@LastModifiedDate
 	@JsonFormat(shape = Shape.STRING)
 	@Column(name = "updated_at")
 	private Instant updatedAt;
-
-	@PrePersist
-	protected void onCreate() {
-		if (createdAt == null) {
-			createdAt = Instant.now();
-		}
-		updatedAt = Instant.now();
-	}
-
-	@PreUpdate
-	protected void onUpdate() {
-		updatedAt = Instant.now();
-	}
 }
