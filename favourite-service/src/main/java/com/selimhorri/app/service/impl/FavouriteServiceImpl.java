@@ -12,6 +12,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.selimhorri.app.constant.AppConstant;
+import com.selimhorri.app.domain.Favourite;
 import com.selimhorri.app.domain.id.FavouriteId;
 import com.selimhorri.app.dto.FavouriteDto;
 import com.selimhorri.app.dto.ProductDto;
@@ -33,220 +34,183 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class FavouriteServiceImpl implements FavouriteService {
-
-    private final FavouriteRepository favouriteRepository;
-    private final RestTemplate restTemplate;
-
-    @Override
-    public List<FavouriteDto> findAll() {
-        log.info("Fetching all favourites");
-        
-        return this.favouriteRepository.findAll()
-                .stream()
-                .map(FavouriteMappingHelper::map)
-                .map(this::enrichWithExternalDataSafely)
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toUnmodifiableList());
-    }
-
-    @Override
-    public FavouriteDto findById(final FavouriteId favouriteId) {
-        log.info("Fetching favourite by userId: {} and productId: {}", 
-                favouriteId.getUserId(), favouriteId.getProductId());
-        
-        FavouriteDto favouriteDto = this.favouriteRepository
-                .findByUserIdAndProductId(favouriteId.getUserId(), favouriteId.getProductId())
-                .map(FavouriteMappingHelper::map)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        ErrorCode.FAVOURITE_NOT_FOUND, 
-                        favouriteId.getUserId(), 
-                        favouriteId.getProductId()));
-
-        enrichWithUserData(favouriteDto);
-        enrichWithProductData(favouriteDto);
-        
-        return favouriteDto;
-    }
-
-    @Override
-    public FavouriteDto save(final FavouriteDto favouriteDto) {
-        log.info("Creating favourite for user: {} and product: {}", 
-                favouriteDto.getUserId(), favouriteDto.getProductId());
-        
-        validateFavouriteInput(favouriteDto);
-        verifyUserExists(favouriteDto.getUserId());
-        verifyProductExists(favouriteDto.getProductId());
-        verifyFavouriteNotExists(favouriteDto.getUserId(), favouriteDto.getProductId());
-        
-        return FavouriteMappingHelper.map(
-                this.favouriteRepository.save(FavouriteMappingHelper.map(favouriteDto)));
-    }
-
-    @Override
-    @Transactional
-    public void deleteById(FavouriteId favouriteId) {
-        log.info("Deleting favourite by userId: {} and productId: {}", 
-                favouriteId.getUserId(), favouriteId.getProductId());
-        
-        if (!favouriteRepository.existsByUserIdAndProductId(
-                favouriteId.getUserId(), favouriteId.getProductId())) {
-            throw new ResourceNotFoundException(
-                    ErrorCode.FAVOURITE_NOT_FOUND, 
-                    favouriteId.getUserId(), 
-                    favouriteId.getProductId());
-        }
-        
-        favouriteRepository.deleteByUserIdAndProductId(
-                favouriteId.getUserId(), favouriteId.getProductId());
-    }
-
-    private FavouriteDto enrichWithExternalDataSafely(FavouriteDto favouriteDto) {
-        try {
-            UserDto userDto = fetchUser(favouriteDto.getUserId());
-            ProductDto productDto = fetchProduct(favouriteDto.getProductId());
-            
-            if (userDto == null || productDto == null) {
-                log.warn("User {} or product {} not found, excluding favourite", 
-                        favouriteDto.getUserId(), favouriteDto.getProductId());
-                return null;
-            }
-            
-            favouriteDto.setUserDto(userDto);
-            favouriteDto.setProductDto(productDto);
-            return favouriteDto;
-            
-        } catch (Exception e) {
-            log.warn("Error fetching details for favourite (user: {}, product: {}), excluding: {}",
-                    favouriteDto.getUserId(), favouriteDto.getProductId(), e.getMessage());
-            return null;
-        }
-    }
-
-    private void enrichWithUserData(FavouriteDto favouriteDto) {
-        try {
-            UserDto userDto = fetchUser(favouriteDto.getUserId());
-            if (userDto == null) {
-                throw new ResourceNotFoundException(
-                        ErrorCode.USER_NOT_FOUND, favouriteDto.getUserId());
-            }
-            favouriteDto.setUserDto(userDto);
-            
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new ResourceNotFoundException(
-                    ErrorCode.USER_NOT_FOUND, favouriteDto.getUserId());
-        } catch (RestClientException e) {
-            log.error("Error fetching user {}: {}", 
-                    favouriteDto.getUserId(), e.getMessage());
-            throw new ExternalServiceException(
-                    "Failed to communicate with user service", e);
-        }
-    }
-
-    private void enrichWithProductData(FavouriteDto favouriteDto) {
-        try {
-            ProductDto productDto = fetchProduct(favouriteDto.getProductId());
-            if (productDto == null) {
-                throw new ResourceNotFoundException(
-                        ErrorCode.PRODUCT_NOT_FOUND, favouriteDto.getProductId());
-            }
-            favouriteDto.setProductDto(productDto);
-            
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new ResourceNotFoundException(
-                    ErrorCode.PRODUCT_NOT_FOUND, favouriteDto.getProductId());
-        } catch (RestClientException e) {
-            log.error("Error fetching product {}: {}", 
-                    favouriteDto.getProductId(), e.getMessage());
-            throw new ExternalServiceException(
-                    "Failed to communicate with product service", e);
-        }
-    }
-
-    private void validateFavouriteInput(FavouriteDto favouriteDto) {
-        if (favouriteDto.getUserId() == null) {
-            throw new InvalidInputException(
-                    ErrorCode.MISSING_REQUIRED_FIELD, "User ID is required");
-        }
-        if (favouriteDto.getProductId() == null) {
-            throw new InvalidInputException(
-                    ErrorCode.MISSING_REQUIRED_FIELD, "Product ID is required");
-        }
-    }
-
-    private void verifyUserExists(Integer userId) {
-        try {
-            UserDto userDto = fetchUser(userId);
-            if (userDto == null) {
-                throw new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND, userId);
-            }
-            
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND, userId);
-        } catch (RestClientException e) {
-            log.error("Error communicating with user service for user {}: {}", 
-                    userId, e.getMessage());
-            throw new ExternalServiceException(
-                    "Error communicating with user service", e);
-        }
-    }
-
-    private void verifyProductExists(Integer productId) {
-        try {
-            ProductDto productDto = fetchProduct(productId);
-            if (productDto == null) {
-                throw new ResourceNotFoundException(ErrorCode.PRODUCT_NOT_FOUND, productId);
-            }
-            
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new ResourceNotFoundException(ErrorCode.PRODUCT_NOT_FOUND, productId);
-        } catch (RestClientException e) {
-            log.error("Error communicating with product service for product {}: {}", 
-                    productId, e.getMessage());
-            throw new ExternalServiceException(
-                    "Error communicating with product service", e);
-        }
-    }
-
-    private void verifyFavouriteNotExists(Integer userId, Integer productId) {
-        boolean favouriteExists = this.favouriteRepository
-                .existsByUserIdAndProductId(userId, productId);
-        
-        if (favouriteExists) {
-            throw new DuplicateResourceException(
-                    ErrorCode.FAVOURITE_ALREADY_EXISTS, userId, productId);
-        }
-    }
-
-    private UserDto fetchUser(Integer userId) {
-        try {
-            String url = AppConstant.DiscoveredDomainsApi.USER_SERVICE_API_URL + "/" + userId;
-            log.debug("Fetching user from: {}", url);
-            
-            return this.restTemplate.getForObject(url, UserDto.class);
-            
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND, userId);
-        } catch (RestClientException e) {
-            log.error("Error fetching user {}: {}", userId, e.getMessage());
-            throw new ExternalServiceException(
-                    "Failed to communicate with user service", e);
-        }
-    }
-
-    private ProductDto fetchProduct(Integer productId) {
-        try {
-            String url = AppConstant.DiscoveredDomainsApi.PRODUCT_SERVICE_API_URL + "/" + productId;
-            log.debug("Fetching product from: {}", url);
-            
-            return this.restTemplate.getForObject(url, ProductDto.class);
-            
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new ResourceNotFoundException(ErrorCode.PRODUCT_NOT_FOUND, productId);
-        } catch (RestClientException e) {
-            log.error("Error fetching product {}: {}", productId, e.getMessage());
-            throw new ExternalServiceException(
-                    "Failed to communicate with product service", e);
-        }
-    }
+	
+	private final FavouriteRepository favouriteRepository;
+	private final RestTemplate restTemplate;
+	
+	@Override
+	public List<FavouriteDto> findAll() {
+		log.info("*** FavouriteDto List, service; fetch all favourites *");
+		return this.favouriteRepository.findAll()
+				.stream()
+				.map(FavouriteMappingHelper::map)
+				.map(this::enrichFavouriteWithExternalData)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toUnmodifiableList());
+	}
+	
+	@Override
+	public FavouriteDto findById(final FavouriteId favouriteId) {
+		log.info("*** FavouriteDto, service; fetch favourite by id *");
+		return this.favouriteRepository.findById(favouriteId)
+				.map(FavouriteMappingHelper::map)
+				.map(this::enrichFavouriteWithExternalData)
+				.orElseThrow(() -> new ResourceNotFoundException(
+						ErrorCode.FAVOURITE_NOT_FOUND, favouriteId));
+	}
+	
+	@Override
+	public FavouriteDto save(final FavouriteDto favouriteDto) {
+		log.info("*** FavouriteDto, service; save favourite *");
+		
+		if (favouriteDto == null || favouriteDto.getUserId() == null 
+				|| favouriteDto.getProductId() == null) {
+			throw new InvalidInputException(ErrorCode.MISSING_REQUIRED_FIELD);
+		}
+		
+		final FavouriteId id = FavouriteMappingHelper.toId(favouriteDto);
+		if (this.favouriteRepository.existsById(id)) {
+			throw new DuplicateResourceException(ErrorCode.DUPLICATE_RESOURCE, id);
+		}
+		
+		// Verificar que el usuario existe
+		verifyUserExists(favouriteDto.getUserId());
+		
+		// Verificar que el producto existe
+		verifyProductExists(favouriteDto.getProductId());
+		
+		try {
+			Favourite saved = this.favouriteRepository.save(
+					FavouriteMappingHelper.map(favouriteDto));
+			return FavouriteMappingHelper.map(saved);
+		} catch (org.springframework.dao.DataIntegrityViolationException e) {
+			throw new DuplicateResourceException(ErrorCode.DUPLICATE_RESOURCE);
+		}
+	}
+	
+	@Override
+	public FavouriteDto update(final FavouriteDto favouriteDto) {
+		log.info("*** FavouriteDto, service; update favourite *");
+		
+		if (favouriteDto == null || favouriteDto.getUserId() == null 
+				|| favouriteDto.getProductId() == null) {
+			throw new InvalidInputException(ErrorCode.MISSING_REQUIRED_FIELD);
+		}
+		
+		final Favourite entity = FavouriteMappingHelper.map(favouriteDto);
+		final FavouriteId entityId = FavouriteMappingHelper.toId(entity);
+		
+		if (!this.favouriteRepository.existsById(entityId)) {
+			throw new ResourceNotFoundException(ErrorCode.FAVOURITE_NOT_FOUND, entityId);
+		}
+		
+		return FavouriteMappingHelper.map(this.favouriteRepository.save(entity));
+	}
+	
+	@Override
+	public void deleteById(final FavouriteId favouriteId) {
+		log.info("*** Void, service; delete favourite by id *");
+		
+		if (!this.favouriteRepository.existsById(favouriteId)) {
+			throw new ResourceNotFoundException(ErrorCode.FAVOURITE_NOT_FOUND, favouriteId);
+		}
+		
+		this.favouriteRepository.deleteById(favouriteId);
+	}
+	
+	/**
+	 * Enriquece el FavouriteDto con datos de servicios externos
+	 */
+	private FavouriteDto enrichFavouriteWithExternalData(FavouriteDto favouriteDto) {
+		try {
+			// Obtener usuario
+			UserDto user = fetchUser(favouriteDto.getUserId());
+			favouriteDto.setUserDto(user);
+			
+			// Obtener producto
+			ProductDto product = fetchProduct(favouriteDto.getProductId());
+			favouriteDto.setProductDto(product);
+			
+			return favouriteDto;
+		} catch (HttpClientErrorException.NotFound e) {
+			log.warn("Resource not found while enriching favourite: {}", e.getMessage());
+			// Retornar el DTO con datos parciales en lugar de fallar
+			return favouriteDto;
+		} catch (RestClientException e) {
+			log.error("Error communicating with external service: {}", e.getMessage());
+			// En findAll, podemos omitir items con errores
+			return null;
+		}
+	}
+	
+	/**
+	 * Obtiene un usuario del servicio externo
+	 */
+	private UserDto fetchUser(Integer userId) {
+		try {
+			String url = AppConstant.DiscoveredDomainsApi.USER_SERVICE_API_URL 
+					+ "/" + userId;
+			log.debug("Fetching user from: {}", url);
+			return this.restTemplate.getForObject(url, UserDto.class);
+		} catch (HttpClientErrorException.NotFound e) {
+			log.warn("User {} not found in user-service", userId);
+			throw new ExternalServiceException(
+					ErrorCode.USER_NOT_FOUND.formatMessage(userId), e);
+		} catch (RestClientException e) {
+			log.error("Error fetching user {}: {}", userId, e.getMessage());
+			throw new ExternalServiceException(
+					"Failed to communicate with user-service", e);
+		}
+	}
+	
+	/**
+	 * Obtiene un producto del servicio externo
+	 */
+	private ProductDto fetchProduct(Integer productId) {
+		try {
+			String url = AppConstant.DiscoveredDomainsApi.PRODUCT_SERVICE_API_URL 
+					+ "/" + productId;
+			log.debug("Fetching product from: {}", url);
+			return this.restTemplate.getForObject(url, ProductDto.class);
+		} catch (HttpClientErrorException.NotFound e) {
+			log.warn("Product {} not found in product-service", productId);
+			throw new ExternalServiceException(
+					ErrorCode.PRODUCT_NOT_FOUND.formatMessage(productId), e);
+		} catch (RestClientException e) {
+			log.error("Error fetching product {}: {}", productId, e.getMessage());
+			throw new ExternalServiceException(
+					"Failed to communicate with product-service", e);
+		}
+	}
+	
+	/**
+	 * Verifica que un usuario existe antes de crear un Favourite
+	 */
+	private void verifyUserExists(Integer userId) {
+		try {
+			fetchUser(userId);
+		} catch (ExternalServiceException e) {
+			throw new InvalidInputException(
+					ErrorCode.USER_NOT_FOUND, 
+					"Cannot create favourite: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Verifica que un producto existe antes de crear un Favourite
+	 */
+	private void verifyProductExists(Integer productId) {
+		try {
+			fetchProduct(productId);
+		} catch (ExternalServiceException e) {
+			throw new InvalidInputException(
+					ErrorCode.PRODUCT_NOT_FOUND, 
+					"Cannot create favourite: " + e.getMessage());
+		}
+	}
 }
+
+
+
+

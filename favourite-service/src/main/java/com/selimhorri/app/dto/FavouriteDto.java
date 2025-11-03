@@ -37,6 +37,7 @@ public class FavouriteDto implements Serializable {
 	@NotNull(message = "Field must not be NULL")
 	private Integer productId;
 	
+	@NotNull(message = "Field must not be NULL")
 	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	@JsonFormat(pattern = AppConstant.LOCAL_DATE_TIME_FORMAT, shape = Shape.STRING)

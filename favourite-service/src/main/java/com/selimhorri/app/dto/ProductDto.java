@@ -29,3 +29,12 @@ public class ProductDto implements Serializable {
 	private Set<FavouriteDto> favouriteDtos;
 	
 }
+
+
+
+
+
+
+
+
+
