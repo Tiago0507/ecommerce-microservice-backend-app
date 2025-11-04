@@ -1,6 +1,0 @@
-Method,Name,Error,Occurrences
-POST,[FLOW] Create order,"ConnectionRefusedError(111, 'Connection refused')",322
-GET,[FLOW] View product details,"ConnectionRefusedError(111, 'Connection refused')",2564
-GET,[FLOW] Browse products,"ConnectionRefusedError(111, 'Connection refused')",1019
-POST,[FLOW] Add to favourites,"ConnectionRefusedError(111, 'Connection refused')",1019
-POST,[FLOW] Create cart,"ConnectionRefusedError(111, 'Connection refused')",699
