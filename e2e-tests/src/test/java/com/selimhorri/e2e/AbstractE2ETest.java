@@ -26,7 +26,7 @@ public abstract class AbstractE2ETest {
 
     protected TestRestTemplate restTemplate = new TestRestTemplate();
 
-        @BeforeAll
+    @BeforeAll
     static void setupInfrastructure() {
         // Create shared network
         network = Network.newNetwork();
@@ -54,7 +54,6 @@ public abstract class AbstractE2ETest {
 
         String eurekaUrl = "http://eureka-server:8761/eureka";
 
-        // Start User Service with longer timeout and log wait strategy
         userServiceContainer = new GenericContainer<>("tiago0507/user-service-ecommerce-boot:local")
                 .withNetwork(network)
                 .withNetworkAliases("user-service")
@@ -64,7 +63,7 @@ public abstract class AbstractE2ETest {
                 .withEnv("SPRING_DATASOURCE_PASSWORD", "root")
                 .withEnv("SPRING_PROFILES_ACTIVE", "dev")
                 .withEnv("SPRING_CLOUD_CONFIG_ENABLED", "false")
-                .withEnv("SPRING_CONFIG_IMPORT", "optional:")
+                .withEnv("SPRING_CLOUD_CONFIG_IMPORT_CHECK_ENABLED", "false")
                 .withEnv("EUREKA_CLIENT_SERVICEURL_DEFAULTZONE", eurekaUrl)
                 .withEnv("EUREKA_CLIENT_REGISTER_WITH_EUREKA", "false")
                 .withEnv("EUREKA_CLIENT_FETCH_REGISTRY", "false")
@@ -82,7 +81,7 @@ public abstract class AbstractE2ETest {
                 .withEnv("SPRING_DATASOURCE_PASSWORD", "root")
                 .withEnv("SPRING_PROFILES_ACTIVE", "dev")
                 .withEnv("SPRING_CLOUD_CONFIG_ENABLED", "false")
-                .withEnv("SPRING_CONFIG_IMPORT", "optional:")
+                .withEnv("SPRING_CLOUD_CONFIG_IMPORT_CHECK_ENABLED", "false")
                 .withEnv("EUREKA_CLIENT_SERVICEURL_DEFAULTZONE", eurekaUrl)
                 .withEnv("EUREKA_CLIENT_REGISTER_WITH_EUREKA", "false")
                 .withEnv("EUREKA_CLIENT_FETCH_REGISTRY", "false")
@@ -100,7 +99,7 @@ public abstract class AbstractE2ETest {
                 .withEnv("SPRING_DATASOURCE_PASSWORD", "root")
                 .withEnv("SPRING_PROFILES_ACTIVE", "dev")
                 .withEnv("SPRING_CLOUD_CONFIG_ENABLED", "false")
-                .withEnv("SPRING_CONFIG_IMPORT", "optional:")
+                .withEnv("SPRING_CLOUD_CONFIG_IMPORT_CHECK_ENABLED", "false")
                 .withEnv("EUREKA_CLIENT_SERVICEURL_DEFAULTZONE", eurekaUrl)
                 .withEnv("EUREKA_CLIENT_REGISTER_WITH_EUREKA", "false")
                 .withEnv("EUREKA_CLIENT_FETCH_REGISTRY", "false")
@@ -118,7 +117,7 @@ public abstract class AbstractE2ETest {
                 .withEnv("SPRING_DATASOURCE_PASSWORD", "root")
                 .withEnv("SPRING_PROFILES_ACTIVE", "dev")
                 .withEnv("SPRING_CLOUD_CONFIG_ENABLED", "false")
-                .withEnv("SPRING_CONFIG_IMPORT", "optional:")
+                .withEnv("SPRING_CLOUD_CONFIG_IMPORT_CHECK_ENABLED", "false")
                 .withEnv("EUREKA_CLIENT_SERVICEURL_DEFAULTZONE", eurekaUrl)
                 .withEnv("EUREKA_CLIENT_REGISTER_WITH_EUREKA", "false")
                 .withEnv("EUREKA_CLIENT_FETCH_REGISTRY", "false")
@@ -136,7 +135,7 @@ public abstract class AbstractE2ETest {
                 .withEnv("SPRING_DATASOURCE_PASSWORD", "root")
                 .withEnv("SPRING_PROFILES_ACTIVE", "dev")
                 .withEnv("SPRING_CLOUD_CONFIG_ENABLED", "false")
-                .withEnv("SPRING_CONFIG_IMPORT", "optional:")
+                .withEnv("SPRING_CLOUD_CONFIG_IMPORT_CHECK_ENABLED", "false")
                 .withEnv("EUREKA_CLIENT_SERVICEURL_DEFAULTZONE", eurekaUrl)
                 .withEnv("EUREKA_CLIENT_REGISTER_WITH_EUREKA", "false")
                 .withEnv("EUREKA_CLIENT_FETCH_REGISTRY", "false")
@@ -154,7 +153,7 @@ public abstract class AbstractE2ETest {
                 .withEnv("SPRING_DATASOURCE_PASSWORD", "root")
                 .withEnv("SPRING_PROFILES_ACTIVE", "dev")
                 .withEnv("SPRING_CLOUD_CONFIG_ENABLED", "false")
-                .withEnv("SPRING_CONFIG_IMPORT", "optional:")
+                .withEnv("SPRING_CLOUD_CONFIG_IMPORT_CHECK_ENABLED", "false")
                 .withEnv("EUREKA_CLIENT_SERVICEURL_DEFAULTZONE", eurekaUrl)
                 .withEnv("EUREKA_CLIENT_REGISTER_WITH_EUREKA", "false")
                 .withEnv("EUREKA_CLIENT_FETCH_REGISTRY", "false")

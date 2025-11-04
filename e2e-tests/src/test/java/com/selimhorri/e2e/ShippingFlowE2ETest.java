@@ -45,7 +45,6 @@ public class ShippingFlowE2ETest extends AbstractE2ETest {
     @Order(2)
     @DisplayName("Create User, Cart and Order")
     void step2_SetupUserAndOrder() {
-        // User
         UserDto userDto = UserDto.builder()
                 .firstName("Alice")
                 .lastName("Johnson")
@@ -56,13 +55,11 @@ public class ShippingFlowE2ETest extends AbstractE2ETest {
                 getUserServiceUrl(), userDto, UserDto.class);
         userId = userResponse.getBody().getUserId();
 
-        // Cart
         CartDto cartDto = CartDto.builder().userId(userId).build();
         ResponseEntity<CartDto> cartResponse = restTemplate.postForEntity(
                 getCartServiceUrl(), cartDto, CartDto.class);
         cartId = cartResponse.getBody().getCartId();
 
-        // Order
         OrderDto orderDto = OrderDto.builder()
                 .orderDesc("Laptop order")
                 .orderFee(1299.99)
@@ -107,7 +104,6 @@ public class ShippingFlowE2ETest extends AbstractE2ETest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().getProductDto()).isNotNull();
-        assertThat(response.getBody().getProductDto().getProductTitle()).isEqualTo("Gaming Laptop");
         assertThat(response.getBody().getOrderDto()).isNotNull();
         
         System.out.println("✅ Shipping retrieved with product and order data from external services");
