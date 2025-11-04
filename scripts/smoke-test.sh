@@ -1,41 +1,35 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 
-echo "[smoke] Checking Docker and Compose versions..."
-docker version
-docker compose version
+SERVICES=(
+  "http://localhost:8000"  # api-gateway
+  "http://localhost:8100"  # user-service
+  "http://localhost:8500"  # product-service
+  "http://localhost:8600"  # order-service
+  "http://localhost:8400"  # payment-service
+  "http://localhost:8700"  # shipping-service
+  "http://localhost:8800"  # favourite-service
+)
 
-wait_for_log() {
-  local name="$1" pattern="$2" timeout="${3:-120}"
-  echo "[smoke] Waiting for '$name' to log pattern: $pattern (timeout ${timeout}s)"
-  SECS=0
-  while (( SECS < timeout )); do
-    if docker logs "$name" 2>&1 | grep -qE "$pattern"; then
-      echo "[smoke] Pattern found in $name logs"
-      return 0
+echo "🔍 Iniciando smoke tests..."
+MAX_ATTEMPTS=30
+SLEEP_TIME=5
+
+for service in "${SERVICES[@]}"; do
+  echo "⏳ Esperando a $service..."
+  attempt=1
+  while [ $attempt -le $MAX_ATTEMPTS ]; do
+    if curl -f -s -o /dev/null "$service/actuator/health" 2>/dev/null; then
+      echo "✅ $service está activo"
+      break
     fi
-    sleep 3
-    SECS=$((SECS+3))
+    if [ $attempt -eq $MAX_ATTEMPTS ]; then
+      echo "❌ $service no responde después de $((MAX_ATTEMPTS * SLEEP_TIME)) segundos"
+      exit 1
+    fi
+    sleep $SLEEP_TIME
+    attempt=$((attempt + 1))
   done
-  echo "[smoke] ERROR: Pattern not found in $name logs within ${timeout}s" >&2
-  docker logs "$name" || true
-  exit 1
-}
+done
 
-echo "[smoke] docker compose ps (core)"
-docker compose -f core.yml ps
-
-echo "[smoke] docker compose ps (services)"
-docker compose -f compose.yml ps
-
-# Validate API Gateway started
-API_GATEWAY_NAME=$(docker ps --format '{{.Names}}' | grep api-gateway-container | head -n1 || true)
-if [[ -z "$API_GATEWAY_NAME" ]]; then
-  echo "[smoke] ERROR: api-gateway container not found" >&2
-  docker compose -f compose.yml ps || true
-  exit 1
-fi
-
-wait_for_log "$API_GATEWAY_NAME" 'Started ApiGatewayApplication|Netty started on port 8080' 180
-
-echo "[smoke] SUCCESS: Smoke checks passed"
+echo "✅ Todos los servicios están operativos"
