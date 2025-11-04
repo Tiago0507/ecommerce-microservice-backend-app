@@ -1,0 +1,110 @@
+Method,Name,Error,Occurrences
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/40', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/12', code=500)",4
+GET,[USER] Get all users,CatchResponseError('Failed with status 500'),140
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/14', code=500)",4
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/60', code=500)",4
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/69', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/56', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/79', code=500)",6
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/30', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/70', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/32', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/75', code=500)",3
+POST,[FLOW] Add to favourites,"BadStatusCode('http://localhost:8080/app/api/favourites', code=500)",82
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/58', code=500)",4
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/55', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/88', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/62', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/92', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/97', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/47', code=500)",3
+POST,[PAYMENT] Process payment,CatchResponseError('Failed with status 500'),20
+POST,[ORDER] Create order,CatchResponseError('Failed with status 500'),10
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/98', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/26', code=500)",2
+GET,[ORDER] Get order by ID,CatchResponseError('Failed with status 500'),138
+PUT,[USER] Update user,CatchResponseError('Failed with status 500'),3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/17', code=500)",1
+POST,[PRODUCT] Create product,CatchResponseError('Failed with status 500'),22
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/64', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/59', code=500)",6
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/53', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/22', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/29', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/66', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/34', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/89', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/54', code=500)",2
+GET,[USER] Get user by ID,CatchResponseError('Failed with status 500'),161
+GET,[PRODUCT] Get all products,CatchResponseError('Failed with status 500'),243
+GET,[ORDER] Get all orders,CatchResponseError('Failed with status 500'),121
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/72', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/33', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/57', code=500)",1
+POST,[FLOW] Create cart,"BadStatusCode('http://localhost:8080/app/api/carts', code=500)",14
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/91', code=500)",4
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/80', code=500)",2
+GET,[FAVOURITE] Get all favourites,CatchResponseError('Failed with status 500'),86
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/11', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/95', code=500)",4
+PUT,[PRODUCT] Update product,CatchResponseError('Failed with status 500'),6
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/31', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/85', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/74', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/68', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/52', code=500)",2
+POST,[FLOW] Create order,"BadStatusCode('http://localhost:8080/app/api/orders', code=500)",101
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/50', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/77', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/49', code=500)",4
+POST,[USER] Create user,CatchResponseError('Failed with status 500'),10
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/2', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/46', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/51', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/15', code=500)",1
+GET,[FLOW] Browse products,"BadStatusCode('http://localhost:8080/app/api/products', code=500)",333
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/44', code=500)",5
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/90', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/76', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/87', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/94', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/71', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/6', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/18', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/61', code=500)",2
+POST,[FAVOURITE] Add to favourites,CatchResponseError('Failed with status 500'),18
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/38', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/21', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/65', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/48', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/100', code=500)",4
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/5', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/45', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/7', code=500)",5
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/3', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/99', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/13', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/84', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/78', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/23', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/20', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/82', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/19', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/10', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/36', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/43', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/27', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/41', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/63', code=500)",6
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/35', code=500)",4
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/93', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/8', code=500)",2
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/16', code=500)",3
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/28', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/37', code=500)",2
+GET,[PAYMENT] Get all payments,CatchResponseError('Failed with status 500'),88
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/42', code=500)",3
+GET,[PRODUCT] Get product by ID,CatchResponseError('Failed with status 500'),197
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/81', code=500)",1
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8080/app/api/products/67', code=500)",4

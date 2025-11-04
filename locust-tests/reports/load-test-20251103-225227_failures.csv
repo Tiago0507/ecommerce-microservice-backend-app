@@ -1,0 +1,25 @@
+Method,Name,Error,Occurrences
+POST,[FLOW] Create order,"BadStatusCode('http://localhost:8900/app/api/orders', code=403)",1455
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/20', code=400)",453
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/12', code=400)",444
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/16', code=400)",462
+POST,[FLOW] Create cart,"BadStatusCode('http://localhost:8900/app/api/carts', code=403)",2812
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/7', code=400)",476
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/19', code=400)",448
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/5', code=400)",455
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/25', code=400)",465
+POST,[FLOW] Add to favourites,"BadStatusCode('http://localhost:8900/app/api/favourites', code=403)",4478
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/18', code=400)",473
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/6', code=400)",428
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/14', code=400)",415
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/24', code=400)",443
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/21', code=400)",439
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/9', code=400)",466
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/10', code=400)",414
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/22', code=400)",419
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/17', code=400)",390
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/8', code=400)",440
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/15', code=400)",457
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/23', code=400)",454
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/11', code=400)",475
+GET,[FLOW] View product details,"BadStatusCode('http://localhost:8900/app/api/products/13', code=400)",468
