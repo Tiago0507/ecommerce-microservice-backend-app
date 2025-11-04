@@ -1,3 +1,49 @@
+# --- Java / Maven ---
+**/target/
+**/surefire-reports/
+**/failsafe-reports/
+*.log
+
+# IDEs and editors
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# --- Python ---
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.tox/
+.venv/
+venv/
+
+# Locust artifacts
+locust-tests/venv/
+locust-tests/reports/
+locust-tests/*.csv
+locust-tests/*.html
+
+# Build output (generic)
+dist/
+build/
+out/
+
+# Env files
+.env
+.env.*
+
+# Coverage
+.coverage
+htmlcov/
+coverage.xml
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
