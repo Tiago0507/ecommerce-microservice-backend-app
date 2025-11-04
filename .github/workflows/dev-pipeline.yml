@@ -1,0 +1,219 @@
+name: Dev Pipeline - Build and Deploy Microservices
+
+on:
+  push:
+    branches: ['develop', 'feature/jenkins-pipelines']
+  pull_request:
+    branches: ['develop']
+
+env:
+  JAVA_VERSION: '17'
+  MAVEN_OPTS: '-Xmx1024m -XX:MaxMetaspaceSize=512m'
+
+jobs:
+  build-and-test:
+    name: Build All Microservices
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build all services with Maven
+        run: |
+          echo "Building all microservices..."
+          mvn -T 2C clean package -DskipTests \
+            -Dmaven.test.skip=true \
+            -Dmaven.javadoc.skip=true \
+            -Dmaven.source.skip=true \
+            -q -ntp -B
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: microservices-jars
+          path: |
+            api-gateway/target/*.jar
+            user-service/target/*.jar
+            product-service/target/*.jar
+            order-service/target/*.jar
+            payment-service/target/*.jar
+            shipping-service/target/*.jar
+            favourite-service/target/*.jar
+          retention-days: 7
+
+  build-docker-images:
+    name: Build Docker Images
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - user-service
+          - product-service
+          - order-service
+          - payment-service
+          - shipping-service
+          - favourite-service
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: microservices-jars
+          path: .
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile
+          push: false
+          load: true
+          tags: tiago0507/${{ matrix.service }}-ecommerce-boot:local
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Save Docker image to tar
+        run: |
+          docker save tiago0507/${{ matrix.service }}-ecommerce-boot:local -o ${{ matrix.service }}-image.tar
+
+      - name: Upload Docker image as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ matrix.service }}
+          path: ${{ matrix.service }}-image.tar
+          retention-days: 1
+
+  deploy-dev:
+    name: Deploy to Dev Environment
+    needs: build-docker-images
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all Docker images
+        uses: actions/download-artifact@v4
+        with:
+          pattern: docker-image-*
+          merge-multiple: true
+
+      - name: Load Docker images
+        run: |
+          echo "Loading Docker images..."
+          for img in *-image.tar; do
+            echo "Loading $img..."
+            docker load -i "$img"
+          done
+          
+          echo "Verifying images loaded:"
+          docker images | grep tiago0507
+
+      - name: Create Docker network
+        run: |
+          echo "Creating Docker network..."
+          docker network create microservices_network || true
+
+      - name: Start core services
+        run: |
+          echo "Starting core infrastructure..."
+          docker compose -f core.yml up -d
+          
+          echo "Waiting for Eureka to be ready..."
+          timeout 120 bash -c 'until curl -sf http://localhost:8761/actuator/health; do sleep 5; done' || {
+            echo "Eureka failed to start"
+            docker compose -f core.yml logs
+            exit 1
+          }
+          echo "✅ Core services ready"
+
+      - name: Start microservices
+        run: |
+          echo "Starting microservices..."
+          docker compose -f compose.yml up -d \
+            api-gateway-container \
+            user-service-container \
+            product-service-container \
+            order-service-container \
+            payment-service-container \
+            shipping-service-container \
+            favourite-service-container
+          
+          echo "Waiting for services to start..."
+          sleep 30
+
+      - name: Verify deployment
+        run: |
+          echo "Checking container status..."
+          docker compose -f compose.yml ps
+          
+          echo "Verifying services are running..."
+          docker compose -f compose.yml ps | grep -E "(api-gateway|user-service|product-service|order-service|payment-service|shipping-service|favourite-service)" | grep -q "Up"
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ All microservices are running"
+          else
+            echo "❌ Some services failed to start"
+            docker compose -f compose.yml logs --tail=50
+            exit 1
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-logs
+          path: |
+            *.logs
+          retention-days: 3
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker compose -f compose.yml down -v || true
+          docker compose -f core.yml down -v || true
+          docker network rm microservices_network || true
+
+  summary:
+    name: Pipeline Summary
+    needs: [build-and-test, build-docker-images, deploy-dev]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## 🎉 Dev Pipeline Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Microservices Built:" >> $GITHUB_STEP_SUMMARY
+          echo "- api-gateway" >> $GITHUB_STEP_SUMMARY
+          echo "- user-service" >> $GITHUB_STEP_SUMMARY
+          echo "- product-service" >> $GITHUB_STEP_SUMMARY
+          echo "- order-service" >> $GITHUB_STEP_SUMMARY
+          echo "- payment-service" >> $GITHUB_STEP_SUMMARY
+          echo "- shipping-service" >> $GITHUB_STEP_SUMMARY
+          echo "- favourite-service" >> $GITHUB_STEP_SUMMARY
