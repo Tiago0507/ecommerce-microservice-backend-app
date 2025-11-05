@@ -1,0 +1,30 @@
+dependencies:
+- name: microservice
+  repository: file://./charts/microservice
+  version: 0.1.0
+- name: microservice
+  repository: file://./charts/microservice
+  version: 0.1.0
+- name: microservice
+  repository: file://./charts/microservice
+  version: 0.1.0
+- name: microservice
+  repository: file://./charts/microservice
+  version: 0.1.0
+- name: microservice
+  repository: file://./charts/microservice
+  version: 0.1.0
+- name: microservice
+  repository: file://./charts/microservice
+  version: 0.1.0
+- name: microservice
+  repository: file://./charts/microservice
+  version: 0.1.0
+- name: microservice
+  repository: file://./charts/microservice
+  version: 0.1.0
+- name: microservice
+  repository: file://./charts/microservice
+  version: 0.1.0
+digest: sha256:1b200916fb1f54e773ea5a5fa827fa811db604d44602873f931af5a7af1a5f90
+generated: "2025-11-04T20:53:18.416194455-05:00"

@@ -1,0 +1,114 @@
+# 1. Config Service (Puerto 9296)
+cloud-config:
+  enabled: true
+  image:
+    repository: "tiago0507/cloud-config-ecommerce-boot"
+    tag: "local"
+    pullPolicy: IfNotPresent
+  service:
+    port: 9296
+  env:
+    SPRING_CONFIG_IMPORT: "" # No se busca a sí mismo
+    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://ecommerce-app-service-discovery.ecommerce.svc.cluster.local:8761/eureka/"
+
+# 2. Service Discovery (Puerto 8761)
+service-discovery:
+  enabled: true
+  image:
+    repository: "tiago0507/service-discovery-ecommerce-boot"
+    tag: "local"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8761
+  env:
+    SPRING_CONFIG_IMPORT: "" # No necesita config
+    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "" # No se registra a sí mismo
+    extraEnvVars:
+      EUREKA_CLIENT_REGISTER-WITH-EUREKA: "false"
+      EUREKA_CLIENT_FETCH-REGISTRY: "false"
+
+# 3. API Gateway (Puerto 8080)
+api-gateway:
+  enabled: true
+  image:
+    repository: "tiago0507/api-gateway-ecommerce-boot" 
+    tag: "local"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8080
+    type: ClusterIP
+
+# 4. User Service (Puerto 8700)
+user-service:
+  enabled: true
+  image:
+    repository: "tiago0507/user-service-ecommerce-boot"
+    tag: "local"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8700
+
+# 5. Product Service (Puerto 8500)
+product-service:
+  enabled: true
+  image:
+    repository: "tiago0507/product-service-ecommerce-boot"
+    tag: "local"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8500
+
+# 6. Order Service (Puerto 8300)
+order-service:
+  enabled: true
+  image:
+    repository: "tiago0507/order-service-ecommerce-boot"
+    tag: "local"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8300
+
+# 7. Payment Service (Puerto 8400)
+payment-service:
+  enabled: true
+  image:
+    repository: "tiago0507/payment-service-ecommerce-boot"
+    tag: "local"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8400
+
+# 8. Shipping Service (Puerto 8600)
+shipping-service:
+  enabled: true
+  image:
+    repository: "tiago0507/shipping-service-ecommerce-boot"
+    tag: "local"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8600
+
+# 9. Favourite Service (Puerto 8800)
+favourite-service:
+  enabled: true
+  image:
+    repository: "tiago0507/favourite-service-ecommerce-boot"
+    tag: "local"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8800
+
+# --- Configuración del Ingress ---
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: "ecommerce.local"
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: ecommerce-app-api-gateway 
+              port:
+                number: 8080
