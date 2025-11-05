@@ -1,0 +1,39 @@
+# Valores por defecto para el chart 'microservice'
+enabled: false # Por defecto, no se despliega nada
+
+replicaCount: 1
+
+image:
+  repository: "tiago0507/default-service"
+  tag: "local"
+  pullPolicy: IfNotPresent 
+
+service:
+  type: ClusterIP # Tipo de servicio por defecto (solo interno)
+  port: 8080       # Puerto que expone el servicio (este es un default, se sobrescribe en el values.yaml principal)
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "250m"  # 0.25 de un CPU
+  limits:
+    memory: "512Mi"
+    cpu: "500m"   # 0.5 de un CPU
+
+# Pruebas de salud (Liveness & Readiness)
+probes:
+  path: "/actuator/health"
+  initialDelaySeconds: 60 # Darle tiempo a Spring Boot para arrancar
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Variables de entorno por defecto
+env:
+  SPRING_PROFILES_ACTIVE: "kubernetes"
+  # URL del Config Server (usando el DNS de Kubernetes)
+  SPRING_CONFIG_IMPORT: "configserver:http://ecommerce-app-cloud-config.ecommerce.svc.cluster.local:9296"
+  
+  # URL de Eureka (usando el DNS de Kubernetes)
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://ecommerce-app-service-discovery.ecommerce.svc.cluster.local:8761/eureka/"
+  EUREKA_INSTANCE_HOSTNAME: "" # Se autodetectará por K8s

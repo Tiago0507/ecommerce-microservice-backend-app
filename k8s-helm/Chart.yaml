@@ -1,0 +1,54 @@
+apiVersion: v2
+name: ecommerce-app
+description: Umbrella chart para la aplicación de E-commerce
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+# Aquí definimos todas nuestras aplicaciones
+# Cada una es una "dependencia" de nuestro chart genérico 'microservice'
+dependencies:
+- name: microservice
+  version: "0.1.0"
+  repository: "file://./charts/microservice" # Le dice a Helm que use el chart local
+  alias: cloud-config
+
+- name: microservice
+  version: "0.1.0"
+  repository: "file://./charts/microservice"
+  alias: service-discovery
+
+- name: microservice
+  version: "0.1.0"
+  repository: "file://./charts/microservice"
+  alias: api-gateway
+
+- name: microservice
+  version: "0.1.0"
+  repository: "file://./charts/microservice"
+  alias: user-service
+
+- name: microservice
+  version: "0.1.0"
+  repository: "file://./charts/microservice"
+  alias: product-service
+
+- name: microservice
+  version: "0.1.0"
+  repository: "file://./charts/microservice"
+  alias: order-service
+
+- name: microservice
+  version: "0.1.0"
+  repository: "file://./charts/microservice"
+  alias: payment-service
+
+- name: microservice
+  version: "0.1.0"
+  repository: "file://./charts/microservice"
+  alias: shipping-service
+
+- name: microservice
+  version: "0.1.0"
+  repository: "file://./charts/microservice"
+  alias: favourite-service
