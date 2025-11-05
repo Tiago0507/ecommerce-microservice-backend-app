@@ -1,0 +1,195 @@
+name: Stage Pipeline - Build, Test, and Deploy
+
+on:
+  push:
+    branches:
+      - stage
+      - main
+      - feature/stage-pipeline
+
+env:
+  JAVA_VERSION: '17'
+  MAVEN_OPTS: '-Xmx1024m -XX:MaxMetaspaceSize=512m'
+  DOCKERHUB_USER: santiagovg
+
+jobs:
+  build-and-test:
+    name: Build & Run Unit/Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25 # Aumentado para ejecutar tests
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build and Test with Maven
+        run: |
+          echo "Building, running unit tests, and integration tests..."
+          # Usamos 'verify' en lugar de 'package -DskipTests'.
+          # 'verify' ejecutará las fases 'test' (unitarias) y 'integration-test' (failsafe).
+          # Tus tests de integración con Testcontainers se ejecutarán aquí.
+          mvn -T 2C clean verify -B -ntp
+          
+      - name: Upload build artifacts (JARs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: microservices-jars
+          path: |
+            api-gateway/target/*.jar
+            user-service/target/*.jar
+            product-service/target/*.jar
+            order-service/target/*.jar
+            payment-service/target/*.jar
+            shipping-service/target/*.jar
+            favourite-service/target/*.jar
+          retention-days: 7
+
+  build-and-push:
+    name: Build & Push Docker Images
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - user-service
+          - product-service
+          - order-service
+          - payment-service
+          - shipping-service
+          - favourite-service
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: microservices-jars
+          path: .
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker image
+        id: build-push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ env.DOCKERHUB_USER }}/${{ matrix.service }}-ecommerce-boot:stage-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-and-locust-test:
+    name: Deploy & Run Locust Tests
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set Image Tag Env Var
+        run: |
+          # Usamos los 7 primeros caracteres del SHA para el tag
+          echo "IMAGE_TAG=stage-${{ github.sha }}" >> $GITHUB_ENV
+          echo "TAG set to: $IMAGE_TAG"
+          
+      - name: Update compose.yml with new Image Tags
+        run: |
+          echo "Replacing image tags in compose.yml..."
+          # Este comando sed reemplaza dinámicamente:
+          # 'tiago0507/...' por 'santiagovg/...'
+          # ':local' por ':stage-COMMIT_SHA'
+          sed -i "s|image: tiago0507/\([a-z-]*\)-ecommerce-boot:local|image: ${{ env.DOCKERHUB_USER }}/\1-ecommerce-boot:${{ env.IMAGE_TAG }}|g" compose.yml
+          
+          echo "--- Updated compose.yml ---"
+          cat compose.yml | grep "image:"
+          echo "---------------------------"
+
+      - name: Create Docker network
+        run: docker network create microservices_network || true
+
+      - name: Start core services
+        run: |
+          echo "Starting core infrastructure (Eureka, Config, Zipkin)..."
+          docker compose -f core.yml up -d
+          
+          echo "Waiting for Eureka to be ready..."
+          timeout 120 bash -c 'until curl -sf http://localhost:8761/actuator/health; do sleep 5; done' || {
+            echo "❌ Eureka failed to start"
+            docker compose -f core.yml logs
+            exit 1
+          }
+          echo "✅ Core services ready"
+
+      - name: Start microservices
+        run: |
+          echo "Starting microservices (Pulling from Docker Hub)..."
+          # docker compose up ahora usará el compose.yml modificado
+          docker compose -f compose.yml up -d
+          
+          echo "Waiting 60s for all services to start and register in Eureka..."
+          sleep 60
+
+      - name: Verify deployment
+        run: |
+          echo "Checking container status..."
+          docker compose -f compose.yml ps
+          
+      - name: Run Locust Performance Tests
+        run: |
+          echo "Installing Locust..."
+          pip install -r locust-tests/requirements.txt
+          
+          echo "Running Locust tests..."
+          # Asumiendo que el script run_load_test.sh usa --check-failure
+          # para fallar el pipeline si las métricas no se cumplen.
+          cd locust-tests
+          ./run_load_test.sh
+          
+          echo "✅ Locust tests completed."
+
+      - name: Upload logs on failure
+        if: failure() # Solo sube logs si el job de Locust falla
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-deployment-logs
+          path: |
+            *.logs
+            locust-tests/*.html # Sube el reporte HTML de Locust
+          retention-days: 3
+
+      - name: Cleanup
+        if: always() # Siempre limpiar, incluso si falla
+        run: |
+          echo "Cleaning up Docker environment..."
+          docker compose -f compose.yml logs --tail=100 || true
+          docker compose -f compose.yml down -v || true
+          docker compose -f core.yml down -v || true
+          docker network rm microservices_network || true
