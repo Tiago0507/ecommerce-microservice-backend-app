@@ -142,11 +142,11 @@ jobs:
           
           echo "Waiting for Eureka to be ready..."
           timeout 120 bash -c 'until curl -sf http://localhost:8761/actuator/health; do sleep 5; done' || {
-            echo "❌ Eureka failed to start"
+            echo "Eureka failed to start"
             docker compose -f core.yml logs
             exit 1
           }
-          echo "✅ Core services ready"
+          echo "Core services ready"
 
       - name: Start microservices
         run: |
@@ -173,7 +173,7 @@ jobs:
           cd locust-tests
           ./run_load_test.sh
           
-          echo "✅ Locust tests completed."
+          echo "Locust tests completed."
 
       - name: Upload logs on failure
         if: failure() # Solo sube logs si el job de Locust falla
